@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Building {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  pinCode   String
+  createdAt DateTime @default(now())
+  offices   Office[]
+}
+
+model Office {
+  id           String   @id @default(uuid())
+  buildingId   String
+  building     Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  officeNumber String
+  tenantName   String?
+  contactNo    String?
+  meters       Meter[]
+}
+
+model Meter {
+  id            String         @id @default(uuid())
+  officeId      String
+  office        Office         @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  meterSerialId String         @unique
+  meterType     String         @default("ELECTRICITY") // ELECTRICITY, WATER, etc.
+  readings      MeterReading[]
+}
+
+model MeterReading {
+  id              String   @id @default(uuid())
+  meterId         String
+  meter           Meter    @relation(fields: [meterId], references: [id], onDelete: Cascade)
+  previousReading Float
+  currentReading  Float
+  unitsConsumed   Float
+  imageUrl        String?
+  method          String   @default("MANUAL") // MANUAL or OCR
+  createdAt       DateTime @default(now())
+  invoice         Invoice?
+}
+
+model Invoice {
+  id          String       @id @default(uuid())
+  readingId   String       @unique
+  reading     MeterReading @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  subtotal    Float
+  taxAmount   Float
+  totalAmount Float
+  status      String       @default("UNPAID") // PAID or UNPAID
+  dueDate     DateTime
+}

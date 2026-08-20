@@ -1,8 +1,12 @@
 import { Hono } from 'hono'
-import { prisma } from '../index'
+import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
 
-const buildingRoutes = new Hono()
+type Variables = {
+  prisma: PrismaClient
+}
+
+const buildingRoutes = new Hono<{ Variables: Variables }>()
 
 // Validation schema
 const buildingSchema = z.object({
@@ -12,6 +16,7 @@ const buildingSchema = z.object({
 })
 
 buildingRoutes.get('/', async (c) => {
+  const prisma = c.var.prisma
   const buildings = await prisma.building.findMany({
     include: {
       _count: {
@@ -23,6 +28,7 @@ buildingRoutes.get('/', async (c) => {
 })
 
 buildingRoutes.post('/', async (c) => {
+  const prisma = c.var.prisma
   try {
     const body = await c.req.json()
     const data = buildingSchema.parse(body)

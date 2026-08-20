@@ -1,9 +1,12 @@
 import { Hono } from 'hono'
-import { prisma } from '../index'
+import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
 
-const officeRoutes = new Hono()
+type Variables = {
+  prisma: PrismaClient
+}
 
+const officeRoutes = new Hono<{ Variables: Variables }>()
 // Validation schema
 const officeSchema = z.object({
   buildingId: z.string().uuid('Invalid Building ID'),
@@ -13,6 +16,7 @@ const officeSchema = z.object({
 })
 
 officeRoutes.get('/building/:buildingId', async (c) => {
+  const prisma = c.var.prisma
   const buildingId = c.req.param('buildingId')
   const offices = await prisma.office.findMany({
     where: { buildingId },
@@ -24,6 +28,7 @@ officeRoutes.get('/building/:buildingId', async (c) => {
 })
 
 officeRoutes.post('/', async (c) => {
+  const prisma = c.var.prisma
   try {
     const body = await c.req.json()
     const data = officeSchema.parse(body)

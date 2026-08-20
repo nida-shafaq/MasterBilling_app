@@ -1,0 +1,10 @@
+name = "billing-app-backend"
+main = "src/index.ts"
+compatibility_date = "2024-03-20"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "meterpulse_db"
+database_name = "meterpulse-db"
+database_id = "5bb22106-bacd-46c5-b65b-a73ff834ac59"
+migrations_dir = "prisma/migrations"

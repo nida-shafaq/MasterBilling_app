@@ -1,9 +1,14 @@
 import { Hono } from 'hono'
-import { prisma } from '../index'
+import { PrismaClient } from '@prisma/client'
+
+type Variables = {
+  prisma: PrismaClient
+}
+
 import { z } from 'zod'
 import { calculateBilling } from '../services/billing'
 
-const readingRoutes = new Hono()
+const readingRoutes = new Hono<{ Variables: Variables }>()
 
 const readingSchema = z.object({
   meterId: z.string().uuid('Invalid Meter ID'),
@@ -14,6 +19,7 @@ const readingSchema = z.object({
 })
 
 readingRoutes.post('/', async (c) => {
+  const prisma = c.var.prisma
   try {
     const body = await c.req.json()
     const data = readingSchema.parse(body)

@@ -1,8 +1,13 @@
 import { Hono } from 'hono'
-import { prisma } from '../index'
+import { PrismaClient } from '@prisma/client'
+
+type Variables = {
+  prisma: PrismaClient
+}
+
 import { z } from 'zod'
 
-const meterRoutes = new Hono()
+const meterRoutes = new Hono<{ Variables: Variables }>()
 
 const meterSchema = z.object({
   officeId: z.string().uuid('Invalid Office ID'),
@@ -11,6 +16,7 @@ const meterSchema = z.object({
 })
 
 meterRoutes.get('/:officeId/latest-reading', async (c) => {
+  const prisma = c.var.prisma
   const officeId = c.req.param('officeId')
   
   const meter = await prisma.meter.findFirst({
@@ -37,6 +43,7 @@ meterRoutes.get('/:officeId/latest-reading', async (c) => {
 })
 
 meterRoutes.post('/', async (c) => {
+  const prisma = c.var.prisma
   try {
     const body = await c.req.json()
     const data = meterSchema.parse(body)
@@ -55,6 +62,7 @@ meterRoutes.post('/', async (c) => {
 })
 
 meterRoutes.get('/', async (c) => {
+  const prisma = c.var.prisma
   const meters = await prisma.meter.findMany({
     include: {
       office: {
@@ -66,6 +74,7 @@ meterRoutes.get('/', async (c) => {
 })
 
 meterRoutes.delete('/:id', async (c) => {
+  const prisma = c.var.prisma
   try {
     const id = c.req.param('id')
     await prisma.meter.delete({ where: { id } })

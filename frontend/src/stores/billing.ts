@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-const API_URL = 'http://localhost:3000/api'
+const API_URL = 'https://billing-app-backend.nidawasilay.workers.dev/api'
 
 export const useBillingStore = defineStore('billing', () => {
   const buildings = ref<any[]>([])

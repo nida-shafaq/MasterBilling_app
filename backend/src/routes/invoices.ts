@@ -1,14 +1,20 @@
 import { Hono } from 'hono'
-import { prisma } from '../index'
+import { PrismaClient } from '@prisma/client'
+
+type Variables = {
+  prisma: PrismaClient
+}
+
 import { z } from 'zod'
 
-const invoiceRoutes = new Hono()
+const invoiceRoutes = new Hono<{ Variables: Variables }>()
 
 const statusSchema = z.object({
   status: z.enum(['PAID', 'UNPAID'])
 })
 
 invoiceRoutes.get('/', async (c) => {
+  const prisma = c.var.prisma
   const invoices = await prisma.invoice.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
@@ -29,6 +35,7 @@ invoiceRoutes.get('/', async (c) => {
 })
 
 invoiceRoutes.get('/:readingId', async (c) => {
+  const prisma = c.var.prisma
   const readingId = c.req.param('readingId')
   
   const invoice = await prisma.invoice.findUnique({
@@ -56,6 +63,7 @@ invoiceRoutes.get('/:readingId', async (c) => {
 })
 
 invoiceRoutes.patch('/:invoiceId/status', async (c) => {
+  const prisma = c.var.prisma
   try {
     const invoiceId = c.req.param('invoiceId')
     const body = await c.req.json()
@@ -77,6 +85,7 @@ invoiceRoutes.patch('/:invoiceId/status', async (c) => {
 
 // Optional dashboard stats route
 invoiceRoutes.get('/stats/dashboard', async (c) => {
+  const prisma = c.var.prisma
   const totalInvoices = await prisma.invoice.findMany()
   const readings = await prisma.meterReading.findMany()
 
